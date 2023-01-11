@@ -149,7 +149,7 @@ const Component = ({
         let newWidth = e.width;
         let newHeight = e.height;
 
-        const [handlePosX, handlePosY] = e.direction;
+        const [handlePosX, _handlePosY] = e.direction;
         let leftClick = false;
 
         if (handlePosX === -1) {
@@ -183,47 +183,17 @@ const Component = ({
         let translateX = beforeTranslate[0];
         let translateY = beforeTranslate[1];
 
-        console.log(top, left);
-
         ref.current.style.transform = `translate(${translateX}px, ${translateY}px)`;
 
-        setNodoReferencia({
-            ...nodoReferencia,
-            top: top - translateY,
-            left: leftClick ? left - (newWidth - width) : left,
-        });
-    };
+        console.log(newWidth, height, left, width);
 
-    const onResizeEnd = async (e) => {
-        let newWidth = e.lastEvent?.width;
-        let newHeight = e.lastEvent?.height;
-
-        const positionMaxTop = top + newHeight;
-        const positionMaxLeft = left + newWidth;
-
-        if (positionMaxTop > parentBounds?.height)
-            newHeight = parentBounds?.height - top;
-        if (positionMaxLeft > parentBounds?.width)
-            newWidth = parentBounds?.width - left;
-
-        const { lastEvent } = e;
-        const { drag } = lastEvent;
-        const { beforeTranslate } = drag;
-
-        const absoluteTop = top + beforeTranslate[1];
-        const absoluteLeft = left + beforeTranslate[0];
-
-        updateMoveable(
-            id,
-            {
-                top: absoluteTop,
-                left: absoluteLeft,
-                width: newWidth,
-                height: newHeight,
-                imgUrl,
-            },
-            true
-        );
+        setNodoReferencia((prevState) => ({
+            ...prevState,
+            height: newHeight,
+            width: newWidth,
+            top: top + translateY < 0 ? 0 : top + translateY,
+            left: left + translateX < 0 ? 0 : left + translateX,
+        }));
     };
 
     const handleSelection = () => {
@@ -277,11 +247,10 @@ const Component = ({
                     });
                 }}
                 onResize={onResize}
-                // onResizeEnd={onResizeEnd}
                 keepRatio={false}
                 throttleResize={1}
                 renderDirections={['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']}
-                edge={false}
+                edge={true}
                 zoom={1}
                 origin={false}
                 padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
